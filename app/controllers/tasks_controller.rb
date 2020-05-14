@@ -1,20 +1,23 @@
 class TasksController < ApplicationController
   #before_action :アクション実行前に実行されるメソッド, only: [:前もって実行されるアクション]
+  before_action :require_user_logged_in
   before_action :set_task, only: [:show, :edit, :update, :destroy]
-  
+
   def index 
-    @tasks = Task.all.page(params[:page]).per(25)
+    if logged_in?
+      @tasks = current_user.tasks.order(id: :desc).page(params[:page]).per(25)
+    end
   end
     
   def show
   end
   
   def new
-    @task = Task.new
+    @task = current_user.tasks.build
   end
   
   def create
-    @task = Task.new(task_params)
+    @task = current_user.tasks.build(task_params)
     
     if @task.save
       flash[:success] = 'Taskが正常に作成されました'
@@ -49,7 +52,7 @@ class TasksController < ApplicationController
   private
   
   def set_task
-    @task = Task.find(params[:id])
+    @task = current_user.tasks.find(params[:id])
   end
   
   def task_params
